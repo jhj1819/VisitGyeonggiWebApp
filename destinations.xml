@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<destinations>
+    <destination>
+        <name>에버랜드</name>
+        <si>용인시</si>
+        <type>어트랙션</type>
+        <fee>50000</fee>
+        <detailPage>#everland</detailPage>
+    </destination>
+    <destination>
+        <name>동탄 호수 공원</name>
+        <si>화성시</si>
+        <type>공원</type>
+        <fee>0</fee>
+        <detailPage>#dongtanLakePark</detailPage>
+    </destination>
+    <destination>
+        <name>한신대학교</name>
+        <si>오산시</si>
+        <type>교육시설</type>
+        <fee>0</fee>
+        <detailPage>#hanshin</detailPage>
+    </destination>
+</destinations>

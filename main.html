@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name ="viewport" content = "width = device-width, initial-scale = 1.0"/>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"/>
+    <title>경기도 관광 가이드</title>
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        var count = 0;
+        var Doc;
+        $(document).ready(function() {
+        	
+            $.ajax({
+                url: 'destinations.xml',
+                type: 'GET',
+                dataType: 'xml',
+                success: function(data) {
+                    Doc = data;
+                    count = $(data).find('destination').length;
+                    displayDestination();
+                    
+                  
+                },
+                error: function() {
+                    $('body').html('<div>Error</div>');
+                }
+            });
+            
+            $("#detailSearchCheck").click(function(){
+        		 $.ajax({
+                url: 'destinations.xml',
+                type: 'GET',
+                dataType: 'xml',
+                success: function(data) {
+                    Doc = data;
+                    count = $(data).find('destination').length;
+                    displayDestinationDetail();
+                    
+                  
+                },
+                error: function() {
+                    $('body').html('<div>Error2</div>');
+                }
+            });
+        });
+        });
+        
+		
+        		
+        
+        function displayDestination() {
+    var i, tagList = '', name = '', si = '', type = '', fee = '', detailPage = '';
+    tagList = '<li data-role="list-divider">관광지 목록</li>';
+
+    if(count > 0) {
+        for(i = 0; i < count; i += 1) {
+            var record = $(Doc).find('destination').eq(i);
+            name = record.find('name').text();
+            si = record.find('si').text();
+            type = record.find('type').text();
+            fee = record.find('fee').text();
+            detailPage = record.find('detailPage').text();
+
+            tagList += '<li><a href="' + detailPage + '"><h2>' + name + '</h2><p>시: ' + si + '</p><p>유형: ' + type + '</p><p>요금: ' + fee + '</p></a></li>';
+        }
+
+        $('#destinationList').html(tagList);
+        $('#destinationList').listview('refresh');
+    }
+}
+
+
+            
+		 function displayDestinationDetail() {
+		 	if($('#select-city').val() == "전체"){
+		 		displayDestination();
+		 	}else{
+    var i, tagList = '', name = '', si = '', type = '', fee = '', detailPage = '';
+    tagList = '<li data-role="list-divider">관광지 목록</li>';
+
+    if(count > 0) {
+        for(i = 0; i < count; i += 1) {
+            var record = $(Doc).find('destination').eq(i);
+            if(record.find('si').text() == $('#select-city').val() )
+            {
+            name = record.find('name').text();
+            si = record.find('si').text();
+            type = record.find('type').text();
+            fee = record.find('fee').text();
+            detailPage = record.find('detailPage').text();
+            tagList += '<li><a href="' + detailPage + '"><h2>' + name + '</h2><p>시: ' + si + '</p><p>유형: ' + type + '</p><p>요금: ' + fee + '</p></a></li>';
+            }
+
+
+        }
+
+        $('#destinationList').html(tagList);
+        $('#destinationList').listview('refresh');
+    }
+    }
+}
+
+
+$(document).ready(function() {
+    var hospitals = [];
+
+    $.ajax({
+        url: 'https://openapi.gg.go.kr/Hospital',
+        type: 'GET',
+        data: {
+            KEY: '8e37e28197d748c5ac0bdceb7424e7b2',
+            Type: 'xml',
+            pIndex: 1,
+            pSize: 100
+        },
+        success: function(data) {
+            $(data).find('row').each(function() {
+                var hospital = {
+                    SIGUN_NM: $(this).find('SIGUN_NM').text(),
+                    BIZPLC_NM: $(this).find('BIZPLC_NM').text(),
+                    TREAT_SBJECT_CONT: $(this).find('TREAT_SBJECT_CONT').text()
+                };
+                hospitals.push(hospital);
+            });
+            displayHospitals(hospitals);
+         
+        },
+        error: function(error) {
+            console.log('Error:', error);
+        }
+    });
+
+    $('#search-button').click(function() {
+        var searchInput = $('#search-input').val().toLowerCase();
+        var filteredHospitals = hospitals.filter(function(hospital) {
+            return hospital.BIZPLC_NM.toLowerCase().includes(searchInput);
+        });
+        displayHospitals(filteredHospitals);
+    });
+
+    function displayHospitals(hospitals) {
+        var listView = $('#hospitalList');
+        listView.empty();
+        for (var i = 0; i < hospitals.length; i++) {
+            var hospital = hospitals[i];
+            var treatSbjectCont = hospital.TREAT_SBJECT_CONT || 'N/A';
+            var treatSbjects = treatSbjectCont.split(',');
+            var limitedTreatSbjects = treatSbjects.slice(0, 2).join(', ');
+            var listItem = `
+            <li>
+                <h2>${hospital.BIZPLC_NM}</h2>
+                <p>${hospital.SIGUN_NM}</p>
+                <p>${limitedTreatSbjects}</p>
+            </li>`;
+            listView.append(listItem);
+        }
+		   $("#hospitalList li:odd").css("backgroundColor", "lightgray");
+        listView.listview('refresh');
+    }
+});
+
+    </script>
+</head>
+<body>
+    <div data-role = "page" id = "tour">
+        <div data-role = "header">
+            <a href = "#panel1" data-icon = "bars">메뉴</a>
+            <h1>경기도 관광 가이드</h1>
+        </div>
+        
+        <div data-role = "content">
+        	<a href="#dialogSearch" data-rel="dialog" data-icon="search" data-role = "button">상세 검색</a>
+            <ul id="destinationList" data-role="listview" data-filter = "true"></ul>
+        </div>
+        
+        <div data-role = "footer" data-position = "fixed">
+            <h1>202058043_정한준</h1>
+        </div>
+
+        <div data-role = "panel" id = "panel1" data-display = "overlay">
+            <ul data-role = "listview">
+                <li data-icon = "delete"><a href = "#" data-rel = "close">메뉴 페널 종료</a></li>
+                <li><a href = "#tour">관광</a></li>
+                <li><a href = "#hospital">병원</a></li>
+                <li><a href = "#transportation">교통</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    
+    <div data-role = "page" id = "hospital">
+        <div data-role = "header">
+            <a href = "#panel1" data-icon = "bars">메뉴</a>
+            <h1>경기도 병원 가이드</h1>
+        </div>
+        <div data-role = "content">
+              <ul id="hospitalList" data-role="listview" data-filter = "true"></ul>
+        </div>
+        <div data-role = "footer">
+            <h1>202058043_정한준</h1>
+        </div>
+        
+                <div data-role = "panel" id = "panel1" data-display = "overlay">
+            <ul data-role = "listview">
+                <li data-icon = "delete"><a href = "#" data-rel = "close">메뉴 패널 종료</a></li>
+                <li><a href = "#tour">관광</a></li>
+                <li><a href = "#hospital">병원</a></li>
+                <li><a href = "#transportation">교통</a></li>
+            </ul>
+        </div>
+      </div>
+      
+      
+      <div data-role = "page" id = "transportation">
+        <div data-role = "header">
+            <a href = "#panel1" data-icon = "bars">메뉴</a>
+            <h1>경기도 교통 가이드</h1>
+        </div>
+        <div data-role = "content">
+             <div data-role = "tabs">
+        		<div data-role = "navbar">
+        			<ul>
+        				<li><a href = "#allLine">전체</a></li>
+        				<li><a href = "#1Line">1호선</a></li>
+        				<li><a href = "#bundangLine">분당선</a></li>
+        			</ul>
+        		</div>
+        		<div id = "allLine">
+        			<img src="전체 지하철 노선도.png" alt="전체 지하철 노선도" width="100%"></a>
+        		</div>
+        		<div id = "1Line">
+        			<img src="1호선노선도.png" alt="1호선 노선도" width="100%"></a>
+        		</div>
+        		<div id = "bundangLine">
+        			<img src="분당선노선도.jpg" alt="분당선노선도." width="100%"></a>
+        		</div>
+        	</div>
+        </div>
+        <div data-role = "footer">
+            <h1>202058043_정한준</h1>
+        </div>
+        
+                <div data-role = "panel" id = "panel1" data-display = "overlay">
+            <ul data-role = "listview">
+                <li data-icon = "delete"><a href = "#" data-rel = "close">메뉴 패널 종료</a></li>
+                <li><a href = "#tour">관광</a></li>
+                <li><a href = "#hospital">병원</a></li>
+                <li><a href = "#transportation">교통</a></li>
+            </ul>
+        </div>
+      </div>
+      
+     <div data-role = "page" id = "everland">
+        <div data-role = "header">
+            <a href = "#" data-role="button" data-rel = "back" data-icon = "back">뒤로</a>
+            <h1 id="destination-name">관광지 세부사항</h1>
+        </div>
+        
+        <div data-role = "content">
+        	<br>
+			<div style="border-color: gray; border-width: 2px; border-style: solid;">
+			    <h2>시 : 용인시</h2>
+			    <h3>요금 : 50000 </h3>
+			</div>
+           <div class="container mt-3">
+  <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#demo">소개</button>
+  <div id="demo" class="collapse" >
+  	<p style="font-size: 15px">영원과 활력을 의미하는 ‘EVER’와 자연과 포근함을 상징하는 ‘LAND’를 결합한 이름의 에버랜드 리조트는 1976년 ‘자연농원’으로 시작해 현재까지 한국의 여가 문화를 선도하고 있습니다.
+
+에버랜드 리조트의 드라이 파크인 에버랜드는 다채로운 축제와 어트랙션, 동물원과 식물원으로 구성된 글로벌 테마파크입니다. 5개의 테마존과 계절마다 모습을 달리하는 다양한 축제, 최신 어트랙션 등 다채로운 시설과 서비스로 고객들에게 최고의 즐거움을 선사합니다.
+  	 </p></div>
+</div>
+            
+            <!-- Carousel -->
+<div id="demo1" class="carousel slide" data-bs-ride="carousel">
+
+  <!-- Indicators/dots -->
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#demo1" data-bs-slide-to="0" class="active"></button>
+    <button type="button" data-bs-target="#demo1" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#demo1" data-bs-slide-to="2"></button>
+  </div>
+  
+  <!-- The slideshow/carousel -->
+  <div class="carousel-inner" >
+    <div class="carousel-item active">
+      <img src="에버랜드1.jpeg" alt="에버랜드" class="d-block" style="width:100%">
+    </div>
+    <div class="carousel-item">
+      <img src="에버랜드2.jpg" alt="에버랜드" class="d-block" style="width:100%">
+    </div>
+    <div class="carousel-item">
+      <img src="에버랜드3.jpg" alt="에버랜드" class="d-block" style="width:100%">
+    </div>
+  </div>
+  
+  <!-- Left and right controls/icons -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#demo1" data-bs-slide="prev" data-inline = "true">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#demo1" data-bs-slide="next" data-inline = "true">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+
+
+        </div>
+        
+        <div data-role = "footer" data-position = "fixed">
+            <h1>202058043_정한준</h1>
+        </div>
+    </div>
+    
+<div data-role="page" id="dialogSearch">
+    <div data-role="header">
+        <h1>상세 검색</h1>
+    </div>
+    <div data-role="content">
+        <label for="select-city">지역 선택:</label>
+        <select name="select-city" id="select-city">
+            <option value>지역 선택</option>
+            <option value="전체">전체</option>
+            <option value="수원시">수원시</option>
+            <option value="오산시">오산시</option>
+            <option value="화성시">화성시</option>
+            <option value="용인시">용인시</option>
+        </select>
+        
+        <a data-role = "button" id = "detailSearchCheck" href = "#tour">확인</a>
+    </div>
+</div>
+</body>
+</html>
